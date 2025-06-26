@@ -4,10 +4,9 @@
         <div class="nav-links">
             <a href="{{ route('dashboard') }}">Home</a>
             <a href="{{route('posts.index')}}">Posts</a>
-            <a href="#">Old Materials</a>
+            <a href="{{route('materials.index')}}">Old Materials</a>
             <a href="#">Lectures</a>
-            <a href="#">Demonstrators</a>
-            <a href="#">Doctors</a>
+            <a href="{{route('instructors.index')}}">Instructors</a>
             <a href="{{ route('profile.edit') }}">profile</a>
         </div>
         @guest

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\Material;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class MaterialController extends Controller
 {
@@ -12,7 +14,8 @@ class MaterialController extends Controller
      */
     public function index()
     {
-        //
+        $materials = Material::all();
+        return view('theem.pages.oldMaterial', compact('materials'));
     }
 
     /**
@@ -20,7 +23,7 @@ class MaterialController extends Controller
      */
     public function create()
     {
-        //
+        return view('theem.pages.createoldMaterial');
     }
 
     /**
@@ -28,7 +31,31 @@ class MaterialController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:200|min:5',
+            'file' => 'required|file|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png|max:10240'
+        ]);
+
+        try {
+            $files = [];
+            if ($request->hasFile('file')) {
+                foreach ($request->file('file') as $file) {
+                    $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
+                        . '.' . $file->getClientOriginalExtension();
+                    #يتبع
+                }
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+
+        Material::create([
+            'material_name' => $validated['title'],
+
+        ]);
     }
 
     /**

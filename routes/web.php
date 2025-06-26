@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\InstructorController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -21,9 +23,18 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/', [PostController::class, 'index'])->name('index');
         Route::post('/storeComment', [PostController::class, 'storeComment'])->name('storeComment');
-        Route::get('/create',[PostController::class,'create'])->name('create');
-        Route::post('/store',[PostController::class,'store'])->name('store');
-        Route::post('/show',[PostController::class,'show'])->name('show');
+        Route::get('/create', [PostController::class, 'create'])->name('create');
+        Route::post('/store', [PostController::class, 'store'])->name('store');
+        Route::post('/show', [PostController::class, 'show'])->name('show');
+    });
+    Route::prefix('instructors')->name('instructors.')->group(function () {
+        Route::get('/', [InstructorController::class, 'index'])->name('index');
+        Route::get('/show/{id}', [InstructorController::class, 'show'])->name('show');
+    });
+    Route::prefix('materials')->name('materials.')->group(function () {
+        Route::get('/', [MaterialController::class, 'index'])->name('index');
+        Route::get('/create', [MaterialController::class, 'create'])->name('create');
+        Route::get('/store', [MaterialController::class, 'store'])->name('store');
     });
 });
 

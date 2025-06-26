@@ -31,20 +31,20 @@ class ProfileController extends Controller
 
          $data = $request->validated();
 
-         // التعامل مع رفع الصورة
+         // Handel upload image
          if ($request->hasFile('profile_image')) {
             $file = $request->file('profile_image');
             $imageName = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('upload'), $imageName);
-            $user->image = $imageName; // حفظ اسم الصورة في العمود 'image'
+            $user->image = $imageName;
         }
-
-         // تحديث باقي البيانات
+        
          $user->fill($data);
 
          if ($user->isDirty('email')) {
              $user->email_verified_at = null;
          }
+
 
          $user->save();
 

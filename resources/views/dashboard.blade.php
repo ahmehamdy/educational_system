@@ -64,10 +64,4 @@
     </div>
 </section>
 
-<!-- Footer -->
-<footer>
-    <div class="container">
-        <p>© 2023 E-Learning Platform. All Rights Reserved.</p>
-    </div>
-</footer>
 @endsection

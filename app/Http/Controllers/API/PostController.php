@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
 use App\Models\Post;
-use App\Models\User;
 use App\Models\Comment;
-use App\Models\Instructor;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
+
+use function PHPUnit\Framework\isEmpty;
 
 class PostController extends Controller
 {
@@ -18,13 +17,26 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
-        $user = $request->user();
         $posts = Post::with(['instructor.user'])
             ->whereHas('instructor')
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->paginate(3);
 
-        return view('theem.pages.post', ['posts' => $posts], ['user' => $user]);
+        if($posts->isEmpty()){
+            $response = [
+                'status'=>200,
+                'message'=>"Data is Empty"
+            ];
+        }else{
+            $response = [
+                'status'=>200,
+                'data'=>$posts,
+                'message'=>'Get Data Successfully'
+
+            ];
+        }
+
+        return response($response,200);
     }
 
     public function storeComment(Request $request)
@@ -36,19 +48,10 @@ class PostController extends Controller
 
         Comment::create([
             'post_id' => $request->post_id,
-            'user_id' => auth()->id(),
+            // 'user_id' => auth()->id(),
             'content' => $request->content,
         ]);
         return back();
-    }
-
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('theem.pages.createpost');
     }
 
     /**
@@ -56,12 +59,8 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        $user = auth()->user();
-        if (!$user->instructor) {
-            return view('theem.pages.post');
-            //return response()->json(['message' => 'Unauthorized. Only instructors can add posts.'], 403);
-        }
-
+        // dd($request->all());
+        // Validate the request data
         $validated = $request->validate([
             'postContent' => 'required|string',
             'postAttachments.*' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png|max:10240'
@@ -92,7 +91,7 @@ class PostController extends Controller
             $posts = Post::create([
                 'content' => $validated['postContent'],
                 'attachments' => !empty($attachments) ? json_encode($attachments) : null,
-                'instructor_id' => $user->instructor->id
+                'instructor_id' => 1
             ]);
 
             return redirect()->route('posts.index');

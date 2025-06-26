@@ -1,167 +1,328 @@
-@extends('theem.layouts.app')
+{{-- @extends('theem.layouts.app')
+
 @section('content')
-    <div class="container py-4">
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-dark fw-bold">All Posts</h2>
+        <a href="{{ route('posts.create') }}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus me-2"></i> Create New Post
+        </a>
+    </div>
+
+    <!-- Posts List -->
+    @if (!is_object($posts))
+        <div class="alert alert-danger">Invalid post data detected!</div>
+    @endif
+
+    @forelse ($posts as $post)
+        <div class="card mb-4 border-0 shadow rounded-4 hover:shadow-lg transition-all">
+            <!-- Post Info (User Name and Profile Picture) -->
+            <div class="card-header bg-white d-flex align-items-center border-0">
+                <div class="d-flex align-items-center">
+                    @if ($post->instructor->user->image ?? false)
+                        <img src="{{ asset("upload/".$post->instructor->user->image) }}" alt="{{ $post->instructor->user->name }}" class="rounded-circle me-3" width="50" height="50">
+                    @else
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    @endif
+                    <div>
+                        <h5 class="mb-0 text-dark">{{ $post->instructor->user->name ?? 'Unknown User' }}</h5>
+                        <small class="text-muted">{{ \Carbon\Carbon::parse($post->created_at)->diffForHumans() }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post Content -->
+            <div class="card-body">
+                <p class="text-dark mb-3">{{ $post->content }}</p>
+
+                <!-- Attachments -->
+                @if ($post->attachments && count(json_decode($post->attachments, true)))
+                    <div class="attachments">
+                        @foreach (json_decode($post->attachments, true) as $attachment)
+                            <div class="attachment mb-2">
+                                <a href="{{ Storage::url($attachment['path']) }}" target="_blank" class="text-dark d-inline-block">
+                                    <i class="fas fa-paperclip"></i> {{ $attachment['name'] }}
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            <!-- Like and Comment Section -->
+            <div class="card-footer bg-light d-flex justify-content-between align-items-center border-0">
+                <div class="d-flex">
+                    <button class="btn btn-link text-primary hover:text-dark transition-all">
+                        <i class="fas fa-thumbs-up"></i> Like
+                    </button>
+                    <button class="btn btn-link text-primary hover:text-dark transition-all">
+                        <i class="fas fa-comment"></i> Comment
+                    </button>
+                </div>
+                <div>
+                    <small>{{ $post->comments->count() }} comments</small>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="card-footer bg-transparent border-0">
+                @foreach ($post->comments as $comment)
+                    <div class="comment mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <img src="{{ asset('upload/' . $comment->user->image) }}" alt="{{ $comment->user->name }}" class="rounded-circle" width="35" height="35">
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="bg-light p-2 rounded shadow-sm">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>{{ $comment->user->name }}</strong>
+                                        <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
+                                    </div>
+                                    <p class="mb-0">{{ $comment->content }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
+                <!-- Add Comment Form -->
+                <form action="{{ route('posts.storeComment') }}" method="POST" class="mt-3">
+                    @csrf
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            @auth
+                                <img src="{{ asset("upload/".auth()->user()->image) }}" class="rounded-circle" width="35" height="35">
+                            @else
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            @endauth
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <input type="hidden" name="post_id" value="{{ $post->id }}">
+                            <input type="text" name="content" class="form-control form-control-sm" placeholder="Write a comment..." required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm ms-2">Post</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @empty
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i> No posts found. Start by creating a new post.
+        </div>
+    @endforelse
+
+    <!-- Pagination -->
+    @if ($posts->hasPages())
+        <div class="mt-4 d-flex justify-content-center">
+            {{ $posts->links() }}
+        </div>
+    @endif
+</div>
+@endsection --}}
+@extends('theem.layouts.app')
+
+@section('content')
+    <div class="container py-8">
         <!-- Page Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h2 text-dark">All Posts</h1>
-            <a href="{{ route('posts.create') }}" class="btn btn-primary d-flex align-items-center">
-                <i class="fas fa-plus me-2"></i> Create New Post
-            </a>
+        <div
+            class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+            <h2 class="text-dark fw-bold ">All Posts</h2>
+            @auth
+                @if (auth()->user()->instructor)
+                    <a href="{{ route('posts.create') }}" class="btn btn-primary shadow-sm d-inline-flex align-items-center">
+                        <i class="fas fa-plus me-2"></i> Create New Post
+                    </a>
+                @endif
+            @endauth
+
         </div>
 
         <!-- Posts List -->
-        <div class="mb-4">
-            @if (!is_object($posts))
-                <div class="alert alert-danger">Invalid post data detected!</div>
-            @endif
-
+        @if (isset($posts) && $posts instanceof \Illuminate\Pagination\LengthAwarePaginator)
             @forelse ($posts as $post)
-                <div class="card mb-4 shadow-sm hover-shadow">
-                    <!-- Instructor Info -->
-                    <div class="card-header bg-light d-flex align-items-center">
-                        @if ($post->instructor->user->profile_photo ?? false)
-                            <img src="{{ Storage::url($post->instructor->user->image) }}"
-                                alt="{{ $post->instructor->user->name }}" class="rounded-circle me-3" width="40"
-                                height="40">
-                        @else
-                            <div class="rounded-circle bg-secondary me-3 d-flex align-items-center justify-content-center"
-                                style="width: 40px; height: 40px;">
-                                <i class="fas fa-user text-light"></i>
-                            </div>
-                        @endif
-                        <div>
-                            <h5 class="mb-0 text-dark">{{ $post->instructor->user->name ?? 'Unknown User' }}</h5>
-                            <div class="post-meta">
-                                <span>{{ \Carbon\Carbon::parse($post->created_at) }}
-                                </span>
-                            </div>
-                        </div>
+                <div class="card mb-4 border-0 shadow rounded-4 transition-all hover:shadow-xl">
+                    <!-- Post Info (User Name and Profile Picture) -->
+                    <div class="card-header bg-white d-flex align-items-center border-0">
+                        <div class="d-flex align-items-center">
+                            @php
+                                $user = $post->instructor?->user;
+                                $userName = $user?->name ?? 'Unknown User';
+                                $userImage = $user?->image ? asset('upload/' . $user->image) : null;
+                            @endphp
 
-                        <!-- Post Content -->
-                        <div class="card-body">
-                            <p class="post-content">{{ $post->content }}</p>
+                            @if ($userImage)
+                                <img src="{{ $userImage }}" alt="{{ $userName }}" class="rounded-circle me-3"
+                                    width="50" height="50" loading="lazy">
+                            @else
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white me-3"
+                                    style="width: 50px; height: 50px;" aria-hidden="true">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            @endif
+
+                            <div>
+                                <h5 class="mb-0 text-dark">{{ $userName }}</h5>
+                                <small class="text-muted" datetime="{{ $post->created_at }}">
+                                    {{ \Carbon\Carbon::parse($post->created_at)->timezone('Africa/Cairo')->diffForHumans() }}
+                                </small>
+
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Post Content -->
+                    <div class="card-body">
+                        <p class="text-dark mb-3">{{ $post->content }}</p>
 
                         <!-- Attachments -->
-                        @if ($post->attachments && count(json_decode($post->attachments, true)))
-                            <div class="card-body pt-0">
-                                <h6 class="text-muted mb-3">
-                                    <i class="fas fa-paperclip me-2"></i> Attachments
-                                </h6>
-                                <div class="row g-2">
-                                    @foreach (json_decode($post->attachments, true) as $attachment)
-                                        <div class="col-md-6">
-                                            <a href="{{ Storage::url($attachment['path']) }}" target="_blank"
-                                                class="d-flex align-items-center p-2 border rounded text-decoration-none hover-bg-light">
-                                                <i
-                                                    class="fas
-                                            @switch(strtolower(pathinfo($attachment['name'], PATHINFO_EXTENSION)))
-                                                @case('pdf') fa-file-pdf text-danger me-2 @break
-                                                @case('doc') @case('docx') fa-file-word text-primary me-2 @break
-                                                @case('ppt') @case('pptx') fa-file-powerpoint text-warning me-2 @break
-                                                @case('xls') @case('xlsx') fa-file-excel text-success me-2 @break
-                                                @case('jpg') @case('jpeg') @case('png') @case('gif') fa-file-image text-purple me-2 @break
-                                                @default fa-file text-secondary me-2
-                                            @endswitch"></i>
-                                                <span class="text-truncate flex-grow-1">{{ $attachment['name'] }}</span>
-                                                <small class="text-muted ms-2">{{ round($attachment['size'] / 1024) }}
-                                                    KB</small>
-                                            </a>
-                                        </div>
-                                    @endforeach
+                        @if ($post->attachments)
+                            @php
+                                $attachments = json_decode($post->attachments, true);
+                                $validAttachments = is_array($attachments)
+                                    ? array_filter($attachments, function ($attachment) {
+                                        return isset($attachment['path'], $attachment['name']);
+                                    })
+                                    : [];
+                            @endphp
+
+                            @if (!empty($validAttachments))
+                                <div class="attachments mt-3">
+                                    <h6 class="text-muted mb-2">Attachments:</h6>
+                                    <ul class="list-unstyled">
+                                        @foreach ($validAttachments as $attachment)
+                                            <li class="mb-1">
+                                                <a href="{{ Storage::url($attachment['path']) }}" target="_blank"
+                                                    class="text-primary d-inline-flex align-items-center"
+                                                    rel="noopener noreferrer">
+                                                    <i class="fas fa-paperclip me-1"></i>
+                                                    <span>{{ $attachment['name'] }}</span>
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
                                 </div>
-                            </div>
+                            @endif
                         @endif
+                    </div>
 
-                        <!-- Comments Section -->
-                        <div class="card-footer bg-transparent">
-                            <h6 class="comments-title">
-                                <i class="fas fa-comments me-2"></i> Comments
-                            </h6>
+                    <!-- Like and Comment Section -->
+                    <div class="card-footer bg-light d-flex justify-content-between align-items-center border-0">
+                        <div class="d-flex">
+                            <button class="btn btn-link text-primary hover:text-dark transition-all p-2" type="button"
+                                aria-label="Like this post">
+                                <i class="fas fa-thumbs-up" aria-hidden="true"></i> Like
+                            </button>
+                            <button class="btn btn-link text-primary hover:text-dark transition-all p-2" type="button"
+                                aria-label="Comment on this post">
+                                <i class="fas fa-comment" aria-hidden="true"></i> Comment
+                            </button>
+                        </div>
+                        <div>
+                            <small>{{ $post->comments->count() }}
+                                {{ Str::plural('comment', $post->comments->count()) }}</small>
+                        </div>
+                    </div>
 
-                            <!-- Existing Comments -->
-                            <div class="mb-3">
-                                @foreach ($post->comments->take(2) as $comment)
-                                    <div class="d-flex mb-3">
-                                        <div class="flex-shrink-0">
-                                            @if ($comment->user->profile_photo)
-                                                <img src="{{ Storage::url($comment->user->profile_photo) }}"
-                                                    class="rounded-circle" width="32" height="32">
-                                            @else
-                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
-                                                    style="width: 32px; height: 32px;">
-                                                    <i class="fas fa-user text-light" style="font-size: 0.8rem;"></i>
+                    <!-- Comments Section -->
+                    <div class="card-footer bg-transparent border-0">
+                        @if ($post->comments->isNotEmpty())
+                            <div class="comments-section mb-3">
+                                @foreach ($post->comments as $comment)
+                                    <div class="comment mb-3">
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-shrink-0">
+                                                @php
+                                                    $commentUser = $comment->user;
+                                                    $commentUserImage = $commentUser?->image
+                                                        ? asset('upload/' . $commentUser->image)
+                                                        : null;
+                                                @endphp
+
+                                                @if ($commentUserImage)
+                                                    <img src="{{ $commentUserImage }}"
+                                                        alt="{{ $commentUser?->name ?? 'User' }}" class="rounded-circle"
+                                                        width="35" height="35" loading="lazy">
+                                                @else
+                                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
+                                                        style="width: 35px; height: 35px;" aria-hidden="true">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <div class="bg-light p-2 rounded shadow-sm">
+                                                    <div class="d-flex justify-content-between">
+                                                        <strong>{{ $commentUser?->name ?? 'Anonymous' }}</strong>
+                                                        <small class="text-muted" datetime="{{ $comment->created_at }}">
+                                                            {{ $comment->created_at->diffForHumans() }}
+                                                        </small>
+                                                    </div>
+                                                    <p class="mb-0">{{ $comment->content }}</p>
                                                 </div>
-                                            @endif
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <div class="bg-light p-3 rounded">
-                                                <div class="d-flex justify-content-between">
-                                                    <strong class="text-dark">{{ $comment->user->name }}</strong>
-                                                    <small
-                                                        class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
-                                                </div>
-                                                <p class="mb-0 text-muted">{{ $comment->content }}</p>
                                             </div>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
+                        @endif
 
-                            <!-- View All Comments Link -->
-                            @if ($post->comments->count() > 2)
-                                <a href="#" class="d-block text-primary mb-3 small">
-                                    View all {{ $post->comments->count() }} comments
-                                </a>
-                            @endif
-
-                            <!-- Add Comment Form -->
-                            <form action="{{ route('posts.storeComment') }}" method="POST" class="comment-form">
+                        <!-- Add Comment Form -->
+                        @auth
+                            <form action="{{ route('posts.storeComment') }}" method="POST" class="mt-3">
                                 @csrf
                                 <div class="d-flex">
                                     <div class="flex-shrink-0">
-                                        @auth
-                                            @if (auth()->user()->profile_photo)
-                                                <img src="{{ Storage::url(auth()->user()->profile_photo) }}"
-                                                    class="rounded-circle" width="32" height="32">
-                                            @else
-                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
-                                                    style="width: 32px; height: 32px;">
-                                                    <i class="fas fa-user text-light" style="font-size: 0.8rem;"></i>
-                                                </div>
-                                            @endif
-                                        @endauth
+                                        <img src="{{ asset('upload/' . auth()->user()->image) }}"
+                                            alt="{{ auth()->user()->name }}" class="rounded-circle" width="35"
+                                            height="35" loading="lazy">
                                     </div>
-                                    <div class="flex-grow-1 ms-3 d-flex">
+                                    <div class="flex-grow-1 ms-3">
                                         <input type="hidden" name="post_id" value="{{ $post->id }}">
-                                        <input type="text" name="content"
-                                            class="form-control form-control-sm rounded-pill me-2"
-                                            placeholder="Write a comment..." required>
-                                        <button type="submit" class="btn btn-sm btn-outline-primary rounded-circle"
-                                            style="width: 32px; height: 32px;">
-                                            <i class="fas fa-paper-plane"></i>
-                                        </button>
+                                        <div class="position-relative">
+                                            <input type="text" name="content"
+                                                class="form-control form-control-sm @error('content') is-invalid @enderror"
+                                                placeholder="Write a comment..." required aria-label="Your comment">
+                                            @error('content')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
                                     </div>
+                                    <button type="submit" class="btn btn-primary btn-sm ms-2" aria-label="Post comment">
+                                        Comment
+                                    </button>
                                 </div>
                             </form>
-                        </div>
+                        @else
+                            <div class="mt-3 text-center text-muted">
+                                <small>Please <a href="{{ route('login') }}" class="text-primary">login</a> to leave a
+                                    comment.</small>
+                            </div>
+                        @endauth
                     </div>
-                @empty
-                    <div class="card text-center py-5">
-                        <div class="card-body">
-                            <i class="fas fa-info-circle text-muted mb-3" style="font-size: 3rem;"></i>
-                            <h3 class="h5 text-dark mb-2">No Posts Found</h3>
-                            <p class="text-muted">Posts will appear here when created</p>
-                        </div>
-                    </div>
+                </div>
+            @empty
+                <div class="alert alert-info text-center rounded-4">
+                    <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
+                    No posts found. Start by creating a new post.
+                </div>
             @endforelse
-        </div>
 
-        @if ($posts->hasPages())
-            <div class="mt-4">
-                {{ $posts->links() }}
+            <!-- Pagination -->
+            @if ($posts->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $posts->links('vendor.pagination.bootstrap-5') }}
+                </div>
+            @endif
+        @else
+            <div class="alert alert-danger rounded-4">
+                <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+                Invalid post data detected! Please try refreshing the page or contact support if the issue persists.
             </div>
         @endif
     </div>
-
 @endsection

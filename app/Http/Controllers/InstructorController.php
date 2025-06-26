@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Instructor;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class InstructorController extends Controller
@@ -10,9 +12,15 @@ class InstructorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request):View
     {
-        //
+        $inst = Instructor::all();
+        return view('theem.pages.instructors',[
+            'user'=>$request->user(),
+            'instructors'=>$inst,
+
+        ]);
+
     }
 
     /**
@@ -36,7 +44,8 @@ class InstructorController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $instructor = Instructor::findOrFail($id);
+        return view('theem.pages.instructorProfile',compact('instructor'));
     }
 
     /**

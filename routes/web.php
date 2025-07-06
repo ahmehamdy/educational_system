@@ -34,8 +34,14 @@ Route::middleware('auth')->group(function () {
     Route::prefix('materials')->name('materials.')->group(function () {
         Route::get('/', [MaterialController::class, 'index'])->name('index');
         Route::get('/create', [MaterialController::class, 'create'])->name('create');
-        Route::get('/store', [MaterialController::class, 'store'])->name('store');
+        Route::post('/store', [MaterialController::class, 'store'])->name('store');
+        Route::get('/show/{id}', [MaterialController::class, 'show'])->name('show');
     });
 });
 
-require __DIR__ . '/auth.php';
+// require __DIR__ . '/auth.php';
+
+
+Route::get('/reset-password/{token}', function ($token) {
+    return response()->json(['token' => $token]);
+})->name('password.reset');

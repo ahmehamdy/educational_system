@@ -18,6 +18,15 @@
                     <label for="title" class="form-label">Material Title</label>
                     <input type="text" name="title" id="title" class="form-control" required>
                 </div>
+                <!-- isnew-->
+                <div class="mb-3">
+                    <label for="status" class="form-label">Material Status</label>
+                    <select name="status" id="status" class="form-control" required>
+                    <option value='' selected>--- Select Status ---</option>
+                    <option value='new'>New Material</option>
+                    <option value='old'>Old Material</option>
+                    </select>
+                </div>
 
 
                 <!-- File Upload -->

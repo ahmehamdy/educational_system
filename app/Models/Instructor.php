@@ -10,6 +10,8 @@ class Instructor extends Model
     use HasFactory;
 
     protected $fillable = ['user_id', 'department'];
+    public $timestamps = false;
+
 
     public function user()
     {

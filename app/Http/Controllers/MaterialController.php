@@ -14,9 +14,10 @@ class MaterialController extends Controller
      */
     public function index()
     {
-        $materials = Material::all();
+        $materials = Material::latest()->paginate(10);
         return view('theem.pages.oldMaterial', compact('materials'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -31,31 +32,39 @@ class MaterialController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         $validated = $request->validate([
             'title' => 'required|string|max:200|min:5',
-            'file' => 'required|file|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png|max:10240'
+            'file' => 'required|file|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png|max:10240',
+            'status' => 'required|string|in:new,old',
         ]);
 
         try {
-            $files = [];
-            if ($request->hasFile('file')) {
-                foreach ($request->file('file') as $file) {
-                    $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
-                        . '.' . $file->getClientOriginalExtension();
-                    #يتبع
-                }
-            }
+            $file = $request->file('file');
+            $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
+                . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('material_attachment', $filename, 'public');
+            $name = $file->getClientOriginalName();
+            $type = $file->getClientMimeType();
+
+            $user = auth()->user();
+
+            $materials =  Material::create([
+                'title' => $validated['title'],
+                'material_name' => $name,
+                'material_type' => $type,
+                'material_link' => $path,
+                'instructor_id' => $user->instructor->id,
+                'status' => $validated['status']
+            ]);
+            // dd($request->all());
+        return redirect()->route('materials.index')->with('success', 'Material uploaded successfully!');
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
-
-        Material::create([
-            'material_name' => $validated['title'],
-
-        ]);
     }
 
     /**

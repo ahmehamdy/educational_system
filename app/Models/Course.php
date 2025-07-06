@@ -10,29 +10,22 @@ class Course extends Model
     use HasFactory;
 
     protected $fillable = [
-        'course_name',
+        'title',
         'description',
-        'academic_year',
+        'level_id',
         'instructor_id'
     ];
-
     public function instructor()
     {
         return $this->belongsTo(Instructor::class);
     }
 
-    public function enrollments()
-    {
-        return $this->hasMany(Enrollment::class);
-    }
-
-    public function students()
-    {
-        return $this->belongsToMany(Student::class, 'enrollments');
-    }
-
     public function materials()
     {
         return $this->hasMany(Material::class);
+    }
+    public function level()
+    {
+        return $this->belongsTo(Level::class);
     }
 }

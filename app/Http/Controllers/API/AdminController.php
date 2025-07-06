@@ -2,48 +2,66 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\User;
+use App\Models\Student;
+use App\Models\Instructor;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Admin;
+use App\Notifications\AccountApprovalNotification;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function getPendingUsers()
     {
-        //
+        if (Auth::user()->type !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Only admins can approve users.'], 403);
+        }
+
+        $users = User::where('status', 'pending')->get();
+        return response()->json($users);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function approveUser($id)
     {
-        //
+        if (Auth::user()->type !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Only admins can approve users.'], 403);
+        }
+
+        $user = User::findOrFail($id);
+        $user->status = 'approved';
+        $user->save();
+
+        if ($user->type === 'student' && !$user->student) {
+            Student::create([
+                'user_id' => $user->id,
+                'level_id' => request()->level_id
+            ]);
+        }
+
+        if ($user->type === 'instructor' && !$user->instructor) {
+            Instructor::create(['user_id' => $user->id]);
+        }
+        if ($user->type === 'admin' && !$user->admin) {
+            Admin::create(['user_id' => $user->id]);
+        }
+
+        $user->notify(new AccountApprovalNotification('approved'));
+
+        return response()->json(['message' => 'User approved and added to the system.']);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function rejectUser($id)
     {
-        //
-    }
+        if (auth()->user()->type !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Only admins can reject users.'], 403);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $user = User::findOrFail($id);
+        $user->status = 'rejected';
+        $user->save();
+        $user->notify(new AccountApprovalNotification('rejected'));
+        return response()->json(['message' => 'User rejected.']);
     }
 }

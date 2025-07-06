@@ -10,12 +10,13 @@ class Material extends Model
     use HasFactory;
 
     protected $fillable = [
+        'title',
         'material_name',
         'material_type',
         'material_link',
         'instructor_id',
         'course_id',
-        'is_new'
+        'status'
     ];
 
     public function instructor()

@@ -10,6 +10,7 @@ class Student extends Model
     use HasFactory;
 
     protected $fillable = ['user_id', 'level_id', 'instructor_id'];
+    public $timestamps = false;
 
     public function user()
     {

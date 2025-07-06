@@ -10,12 +10,15 @@ class Quiz extends Model
     use HasFactory;
 
     protected $fillable = [
-        'instructor_id',
-        'course_id',
-        'quiz_name',
+        'title',
         'description',
-        'quiz_date',
-        'duration'
+        'course_id',
+        'start_time',
+        'end_time',
+    ];
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
     ];
 
     public function instructor()
@@ -26,5 +29,10 @@ class Quiz extends Model
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function questions()
+    {
+        return $this->hasMany(Question::class);
     }
 }

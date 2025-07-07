@@ -64,16 +64,17 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::with(['student', 'instructor'])->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
         if ($user->status !== 'approved') {
             return response()->json(['message' => 'Your account is not approved yet.'], 403);
         }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'access_token' => $token,
@@ -81,6 +82,7 @@ class AuthController extends Controller
             'user' => $user
         ]);
     }
+
 
     protected function performLogin($user)
     {

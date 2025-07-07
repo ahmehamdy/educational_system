@@ -4,18 +4,23 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMaterialsTable extends Migration
+return new class extends Migration
 {
     public function up()
     {
         Schema::create('materials', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
+            $table->string('title');
             $table->string('material_name');
-            $table->string('material_type')->nullable();
-            $table->text('material_link')->nullable();
-            $table->foreignId('uploader_id')->nullable()->constrained('instructors')->onDelete('set null');
-            $table->enum('uploader_role', ['admin', 'professor'])->nullable();
-            $table->boolean('is_new')->default(false);
+            $table->string('material_type');
+            $table->text('material_link');
+            $table->unsignedBigInteger('instructor_id')->nullable();
+            $table->string('status')->nullable();
+            $table->unsignedBigInteger('course_id')->nullable();
+            $table->timestamps();
+
+            $table->foreign('instructor_id')->references('id')->on('instructors')->onDelete('cascade');
+            $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
         });
     }
 
@@ -23,4 +28,4 @@ class CreateMaterialsTable extends Migration
     {
         Schema::dropIfExists('materials');
     }
-}
+};

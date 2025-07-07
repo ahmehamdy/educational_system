@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\PostController;
 use App\Http\Controllers\Api\QuizController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\API\InstructorController;
 use App\Http\Controllers\Api\LevelController;
 use App\Http\Controllers\Api\QuizSubmissionController;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 
 #public route
@@ -26,14 +28,14 @@ Route::options('/{any}', function () {
 #privet route
 Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware([EnsureFrontendRequestsAreStateful::class,'auth:sanctum'])->group(function () {
 
+    Route::get('/user', function (Request $request) {return $request->user();});
     Route::get('/pending_users', [AdminController::class, 'getPendingUsers']);
     Route::post('/users/{id}/approve', [AdminController::class, 'approveUser']);
     Route::post('/users/{id}/reject', [AdminController::class, 'rejectUser']);
 
     Route::prefix('courses')->name('courses.')->group(function () {
-
         Route::get('/', [CourseController::class, 'index']);
         Route::get('/myCourses', [CourseController::class, 'myCourses']);
         Route::get('/{id}', [CourseController::class, 'show']);
@@ -42,15 +44,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/destroy/{id}', [CourseController::class, 'destroy']);
     });
 
-
-
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profileupdate', [ProfileController::class, 'update']);
     Route::post('/profilechangepassword', [ProfileController::class, 'changePassword']);
     // Route::post('/profiledelete', [ProfileController::class, 'deleteAccount']);
 
     Route::prefix('posts')->name('posts.')->group(function () {
-
         Route::get('/myPosts', [PostController::class, 'myPosts']);
         Route::get('/', [PostController::class, 'index']);
         Route::post('/storeComment/{post_id}', [PostController::class, 'storeComment']);
@@ -59,7 +58,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update/{id}', [PostController::class, 'update']);
         Route::delete('/destroy/{id}', [PostController::class, 'destroy']);
     });
-
 
     Route::prefix('instructors')->name('instructors.')->group(function () {
         Route::get('/', [InstructorController::class, 'index']);

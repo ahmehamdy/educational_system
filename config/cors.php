@@ -8,17 +8,16 @@ return [
 
     'allowed_origins' => [
         'http://localhost:3000',
-        'https://a3a3-156-197-155-244.ngrok-free.app'
+        'https://a3a3-156-197-155-244.ngrok-free.app',
     ],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['*', 'Authorization', 'Content-Type'],
 
     'exposed_headers' => [],
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
-
+    'supports_credentials' => true,
 ];

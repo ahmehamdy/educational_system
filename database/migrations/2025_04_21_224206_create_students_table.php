@@ -4,15 +4,20 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateStudentsTable extends Migration
+return new class extends Migration
 {
     public function up()
     {
         Schema::create('students', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('level_id')->nullable()->constrained()->onDelete('set null');
-            $table->integer('phone');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('level_id')->nullable();
+            $table->unsignedBigInteger('instructor_id')->nullable();
+            $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('level_id')->references('id')->on('levels')->onDelete('set null');
+            $table->foreign('instructor_id')->references('id')->on('instructors');
         });
     }
 
@@ -20,4 +25,4 @@ class CreateStudentsTable extends Migration
     {
         Schema::dropIfExists('students');
     }
-}
+};

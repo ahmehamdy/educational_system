@@ -18,6 +18,16 @@ class QuizSubmissionController extends Controller
         ]);
 
         $quiz = Quiz::with('questions')->findOrFail($quizId);
+        foreach ($quiz->questions as $question) {
+            if (!isset($request->answers[$question->id])) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => "You must answer all questions",
+                    'question_id' => $question->id
+                ], 422);
+            }
+        }
+
         $correctAnswers = 0;
 
         $submission = QuizSubmission::create([

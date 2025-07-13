@@ -13,13 +13,13 @@ use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\API\InstructorController;
 use App\Http\Controllers\Api\LevelController;
 use App\Http\Controllers\Api\QuizSubmissionController;
-use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 
 #public route
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgotpassword', [AuthController::class, 'sendResetLink']);
+Route::get('/levels', [LevelController::class, 'index']);
 Route::post('/resetpassword', [AuthController::class, 'reset']);
 Route::options('/{any}', function () {
     return response()->json([], 200);
@@ -28,9 +28,11 @@ Route::options('/{any}', function () {
 #privet route
 Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::middleware([EnsureFrontendRequestsAreStateful::class,'auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
 
-    Route::get('/user', function (Request $request) {return $request->user();});
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
     Route::get('/pending_users', [AdminController::class, 'getPendingUsers']);
     Route::post('/users/{id}/approve', [AdminController::class, 'approveUser']);
     Route::post('/users/{id}/reject', [AdminController::class, 'rejectUser']);
@@ -82,7 +84,6 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class,'auth:sanctum'])->gr
         Route::post('update/{id}', [QuestionController::class, 'update']);
         Route::delete('{id}', [QuestionController::class, 'destroy']);
     });
-    Route::get('/levels', [LevelController::class, 'index']);
     Route::get('/download/{id}', [MaterialController::class, 'download']);
 
     Route::prefix('materials')->name('materials.')->group(function () {

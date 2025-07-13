@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Models\Post;
 use App\Models\Comment;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\Instructor;
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Validated;
 use Illuminate\Support\Facades\Storage;
@@ -22,7 +23,7 @@ class PostController extends Controller
         $posts = Post::with(['instructor.user', 'comments.user'])
             ->whereHas('instructor')
             ->orderBy('created_at', 'desc')
-            ->paginate(3);
+            ->paginate(7);
 
 
         if ($posts->isEmpty()) {
@@ -80,7 +81,7 @@ class PostController extends Controller
         // Validate the request data
         $validated = $request->validate([
             'postContent' => 'required|string',
-            'postAttachments' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png,mp4,mov,avi,mkv,webm|max:10240'
+            'postAttachments.*' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png,mp4,mov,avi,mkv,webm|max:10240'
         ]);
         //dd($request->all(), $request->file('postAttachments'));
 
@@ -114,17 +115,29 @@ class PostController extends Controller
 
 
             // Create the post
-            $user = auth()->user();
-            if (!$user->instructor) {
+            // $user = auth()->user();
+
+            // if (!$user->instructor) {
+            //     return response()->json([
+            //         'message' => 'You are not an instructor.'
+            //     ], 403);
+            // }
+            $instructor = Instructor::where('user_id', auth()->id())->first();
+            // dd($user->toArray());
+
+            if (!$instructor) {
                 return response()->json([
                     'message' => 'You are not an instructor.'
                 ], 403);
             }
+
             $posts = Post::create([
                 'content' => $validated['postContent'],
                 'attachments' => !empty($attachments) ? json_encode($attachments) : null,
-                'instructor_id' => $user->instructor->id
+                'instructor_id' => $instructor->id
             ]);
+            $posts->load('instructor.user');
+
             $response = [
                 'status' => 200,
                 'data' => $posts,

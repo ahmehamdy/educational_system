@@ -1,19 +1,15 @@
 <?php
 
 return [
-
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'http://localhost:3000',
-        'https://a3a3-156-197-155-244.ngrok-free.app',
-    ],
+    'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*', 'Authorization', 'Content-Type'],
+    'allowed_headers' => ['*'],
 
     'exposed_headers' => [],
 
@@ -21,3 +17,4 @@ return [
 
     'supports_credentials' => true,
 ];
+

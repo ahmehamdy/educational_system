@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -11,13 +11,13 @@ class CourseController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
-
-        if ($user->type !== 'admin') {
-            return response()->json([
-                'message' => 'Unauthorized. Only admins can get all courses.'
-            ], 403);
-        }
+        // $user = Auth::user();
+        // 
+        // if ($user->type !== 'admin') {
+        //     return response()->json([
+        //         'message' => 'Unauthorized. Only admins can get all courses.'
+        //     ], 403);
+        // }
 
         $courses = Course::with(['instructor.user', 'level', 'materials'])->latest()->get();
 
